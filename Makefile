@@ -8,7 +8,9 @@ all: help
 # Generate Verilog from Chisel
 hardware:
 	@echo "Generating Verilog from Chisel..."
-	sbt "runMain rv32e.soc.RV32ESoC"
+	@mkdir -p generated
+	sbt "runMain rv32e.soc.VerilogGenerator" > generated/RV32ESoC.v
+	@echo "Verilog generated in generated/RV32ESoC.v"
 
 # Run hardware tests
 test:

@@ -10,11 +10,14 @@
 **解决方案**: 将所有 `switch/is` 改为 `when/elsewhen` 模式
 - 提交: `5e2df12` - "Fix Decoder.scala: Replace switch/is with when/elsewhen for BitPat compatibility"
 
-#### 2. RV32ESoC.scala - ChiselStage API
-**问题**: `chisel3.stage.ChiselStage` 在 Chisel 3.6.0 中不可用
-**错误**: `type ChiselStage is not a member of package chisel3.stage`
-**解决方案**: 使用 `chisel3.Driver.execute` API（Chisel 3.6.0 兼容）
-- 提交: `84591e8` - "Fix RV32ESoC.scala: Use chisel3.Driver API for Chisel 3.6.0 compatibility"
+#### 2. RV32ESoC.scala - Verilog 生成 API
+**问题**: 不同 Chisel 版本的 Verilog 生成 API 不同
+**错误**:
+- `type ChiselStage is not a member of package chisel3.stage`
+- `object Driver is not a member of package chisel3`
+
+**解决方案**: 创建独立的 VerilogGenerator，使用 `getVerilogString` API
+- 提交: `66abef3` - "Fix: Remove incompatible Driver API, add VerilogGenerator with getVerilogString"
 
 ### 项目完成状态
 
@@ -47,6 +50,8 @@
 ### Git 提交历史
 
 ```
+66abef3 Fix: Remove incompatible Driver API, add VerilogGenerator with getVerilogString
+e214a64 Update STATUS.md with RV32ESoC.scala fix
 84591e8 Fix RV32ESoC.scala: Use chisel3.Driver API for Chisel 3.6.0 compatibility
 59a3de2 Add project status document
 5e2df12 Fix Decoder.scala: Replace switch/is with when/elsewhen for BitPat compatibility
@@ -56,19 +61,33 @@ ce96cfd Complete RV32E SoC implementation with all components
 
 ### 构建说明
 
-**使用 SBT** (推荐):
+**编译 Chisel 代码**:
 ```bash
-cd /home/user/rv32e
+# 使用 SBT
 sbt compile
-sbt test
+
+# 或使用 Mill
+mill chisel.compile
 ```
 
-**使用 Mill** (如果在其他环境):
+**生成 Verilog**:
 ```bash
-# 确保在正确的 git 仓库目录
-cd /home/user/rv32e
-# 如果使用 mill，可能需要 build.sc 文件
-mill chisel.compile
+# 使用 SBT
+mkdir -p generated
+sbt "runMain rv32e.soc.VerilogGenerator" > generated/RV32ESoC.v
+
+# 或使用 Mill
+mkdir -p generated
+mill chisel.runMain rv32e.soc.VerilogGenerator > generated/RV32ESoC.v
+```
+
+**运行测试**:
+```bash
+# 使用 SBT
+sbt test
+
+# 或使用 Mill
+mill chisel.test
 ```
 
 ### 文件统计

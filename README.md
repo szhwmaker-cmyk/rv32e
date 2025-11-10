@@ -114,11 +114,20 @@ make
 ### 构建硬件
 
 ```bash
+# 编译 Chisel 代码
+sbt compile
+# 或使用 mill
+mill chisel.compile
+
 # 生成 Verilog 代码
-sbt "runMain rv32e.soc.RV32ESoC"
+sbt "runMain rv32e.soc.VerilogGenerator" > generated/RV32ESoC.v
+# 或使用 mill
+mill chisel.runMain rv32e.soc.VerilogGenerator > generated/RV32ESoC.v
 
 # 运行单元测试
 sbt test
+# 或使用 mill
+mill chisel.test
 
 # 运行特定测试
 sbt "testOnly rv32e.peripheral.UARTTest"
