@@ -16,7 +16,7 @@ CFLAGS = -march=$(ARCH) -mabi=$(ABI) -O2 -Wall -Wextra
 CFLAGS += -fno-builtin -nostdlib -nostartfiles
 CFLAGS += -ffreestanding -fno-common
 ASFLAGS = -march=$(ARCH) -mabi=$(ABI)
-LDFLAGS = -T../common/linker.ld -nostdlib -static -lgcc
+LDFLAGS = -T../common/linker.ld -nostdlib -static
 
 # Source files
 COMMON_DIR = ../common
@@ -38,7 +38,7 @@ $(COMMON_DIR)/start.o: $(COMMON_DIR)/start.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET).elf: $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -lgcc -o $@
 
 $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
