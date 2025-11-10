@@ -16,7 +16,7 @@ CFLAGS = -march=$(ARCH) -mabi=$(ABI) -O2 -Wall -Wextra
 CFLAGS += -fno-builtin -nostdlib -nostartfiles
 CFLAGS += -ffreestanding -fno-common
 ASFLAGS = -march=$(ARCH) -mabi=$(ABI)
-LDFLAGS = -T../common/linker.ld -nostdlib -static
+LDFLAGS = -T../common/linker.ld -nostdlib -static -lgcc
 
 # Common files
 COMMON_DIR = ../common
