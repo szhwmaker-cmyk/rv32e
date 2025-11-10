@@ -1,8 +1,10 @@
+#include <stddef.h>
 #include "rtthread_stub.h"
 #include "../common/soc.h"
 
 /* Thread 1: LED blink simulation */
 void thread1_entry(void *parameter) {
+    (void)parameter;  /* Unused */
     static uint32_t count = 0;
 
     rt_kprintf("Thread 1: ");
@@ -35,6 +37,7 @@ void thread1_entry(void *parameter) {
 
 /* Thread 2: Simple counter */
 void thread2_entry(void *parameter) {
+    (void)parameter;  /* Unused */
     static uint32_t counter = 0;
 
     rt_kprintf("Thread 2: Counter = ");
