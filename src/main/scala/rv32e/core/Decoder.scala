@@ -33,146 +33,147 @@ class Decoder extends Module {
   ctrl.aluSrc2    := 0.U  // rs2
   ctrl.wbSrc      := 0.U  // ALU
 
-  // 根据 opcode 解码
-  switch(opcode) {
+  // 根据 opcode 解码 - 使用 when/elsewhen 代替 switch
+  when(opcode === "b0110111".U) {
     // LUI: rd = imm << 12
-    is(OP_LUI) {
-      ctrl.instType := InstType.U
-      ctrl.aluOp    := ALUOp.COPY_B
-      ctrl.regWrite := true.B
-      ctrl.aluSrc2  := 1.U  // imm
-    }
-
+    ctrl.instType := InstType.U
+    ctrl.aluOp    := ALUOp.COPY_B
+    ctrl.regWrite := true.B
+    ctrl.aluSrc2  := 1.U  // imm
+  }.elsewhen(opcode === "b0010111".U) {
     // AUIPC: rd = PC + (imm << 12)
-    is(OP_AUIPC) {
-      ctrl.instType := InstType.U
-      ctrl.aluOp    := ALUOp.ADD
-      ctrl.regWrite := true.B
-      ctrl.aluSrc1  := 1.U  // PC
-      ctrl.aluSrc2  := 1.U  // imm
-    }
-
+    ctrl.instType := InstType.U
+    ctrl.aluOp    := ALUOp.ADD
+    ctrl.regWrite := true.B
+    ctrl.aluSrc1  := 1.U  // PC
+    ctrl.aluSrc2  := 1.U  // imm
+  }.elsewhen(opcode === "b1101111".U) {
     // JAL: rd = PC + 4, PC = PC + imm
-    is(OP_JAL) {
-      ctrl.instType   := InstType.J
-      ctrl.aluOp      := ALUOp.ADD
-      ctrl.branchType := BranchType.JAL
-      ctrl.regWrite   := true.B
-      ctrl.aluSrc1    := 1.U  // PC
-      ctrl.aluSrc2    := 2.U  // 4
-      ctrl.wbSrc      := 2.U  // PC+4
-    }
-
+    ctrl.instType   := InstType.J
+    ctrl.aluOp      := ALUOp.ADD
+    ctrl.branchType := BranchType.JAL
+    ctrl.regWrite   := true.B
+    ctrl.aluSrc1    := 1.U  // PC
+    ctrl.aluSrc2    := 2.U  // 4
+    ctrl.wbSrc      := 2.U  // PC+4
+  }.elsewhen(opcode === "b1100111".U) {
     // JALR: rd = PC + 4, PC = (rs1 + imm) & ~1
-    is(OP_JALR) {
-      ctrl.instType   := InstType.I
-      ctrl.aluOp      := ALUOp.ADD
-      ctrl.branchType := BranchType.JALR
-      ctrl.regWrite   := true.B
-      ctrl.aluSrc1    := 1.U  // PC
-      ctrl.aluSrc2    := 2.U  // 4
-      ctrl.wbSrc      := 2.U  // PC+4
-    }
-
+    ctrl.instType   := InstType.I
+    ctrl.aluOp      := ALUOp.ADD
+    ctrl.branchType := BranchType.JALR
+    ctrl.regWrite   := true.B
+    ctrl.aluSrc1    := 1.U  // PC
+    ctrl.aluSrc2    := 2.U  // 4
+    ctrl.wbSrc      := 2.U  // PC+4
+  }.elsewhen(opcode === "b1100011".U) {
     // BRANCH
-    is(OP_BRANCH) {
-      ctrl.instType := InstType.B
-      ctrl.aluOp    := ALUOp.ADD
-      ctrl.aluSrc1  := 1.U  // PC
-      ctrl.aluSrc2  := 1.U  // imm
+    ctrl.instType := InstType.B
+    ctrl.aluOp    := ALUOp.ADD
+    ctrl.aluSrc1  := 1.U  // PC
+    ctrl.aluSrc2  := 1.U  // imm
 
-      switch(funct3) {
-        is(F3_BEQ)  { ctrl.branchType := BranchType.BEQ }
-        is(F3_BNE)  { ctrl.branchType := BranchType.BNE }
-        is(F3_BLT)  { ctrl.branchType := BranchType.BLT }
-        is(F3_BGE)  { ctrl.branchType := BranchType.BGE }
-        is(F3_BLTU) { ctrl.branchType := BranchType.BLTU }
-        is(F3_BGEU) { ctrl.branchType := BranchType.BGEU }
-      }
+    when(funct3 === "b000".U) {
+      ctrl.branchType := BranchType.BEQ
+    }.elsewhen(funct3 === "b001".U) {
+      ctrl.branchType := BranchType.BNE
+    }.elsewhen(funct3 === "b100".U) {
+      ctrl.branchType := BranchType.BLT
+    }.elsewhen(funct3 === "b101".U) {
+      ctrl.branchType := BranchType.BGE
+    }.elsewhen(funct3 === "b110".U) {
+      ctrl.branchType := BranchType.BLTU
+    }.elsewhen(funct3 === "b111".U) {
+      ctrl.branchType := BranchType.BGEU
     }
-
+  }.elsewhen(opcode === "b0000011".U) {
     // LOAD
-    is(OP_LOAD) {
-      ctrl.instType := InstType.I
-      ctrl.aluOp    := ALUOp.ADD
-      ctrl.regWrite := true.B
-      ctrl.memRead  := true.B
-      ctrl.aluSrc2  := 1.U  // imm
-      ctrl.wbSrc    := 1.U  // MEM
+    ctrl.instType := InstType.I
+    ctrl.aluOp    := ALUOp.ADD
+    ctrl.regWrite := true.B
+    ctrl.memRead  := true.B
+    ctrl.aluSrc2  := 1.U  // imm
+    ctrl.wbSrc    := 1.U  // MEM
 
-      switch(funct3) {
-        is(F3_LB)  { ctrl.memOp := MemOp.LB }
-        is(F3_LH)  { ctrl.memOp := MemOp.LH }
-        is(F3_LW)  { ctrl.memOp := MemOp.LW }
-        is(F3_LBU) { ctrl.memOp := MemOp.LBU }
-        is(F3_LHU) { ctrl.memOp := MemOp.LHU }
-      }
+    when(funct3 === "b000".U) {
+      ctrl.memOp := MemOp.LB
+    }.elsewhen(funct3 === "b001".U) {
+      ctrl.memOp := MemOp.LH
+    }.elsewhen(funct3 === "b010".U) {
+      ctrl.memOp := MemOp.LW
+    }.elsewhen(funct3 === "b100".U) {
+      ctrl.memOp := MemOp.LBU
+    }.elsewhen(funct3 === "b101".U) {
+      ctrl.memOp := MemOp.LHU
     }
-
+  }.elsewhen(opcode === "b0100011".U) {
     // STORE
-    is(OP_STORE) {
-      ctrl.instType := InstType.S
-      ctrl.aluOp    := ALUOp.ADD
-      ctrl.memWrite := true.B
-      ctrl.aluSrc2  := 1.U  // imm
+    ctrl.instType := InstType.S
+    ctrl.aluOp    := ALUOp.ADD
+    ctrl.memWrite := true.B
+    ctrl.aluSrc2  := 1.U  // imm
 
-      switch(funct3) {
-        is(F3_SB) { ctrl.memOp := MemOp.SB }
-        is(F3_SH) { ctrl.memOp := MemOp.SH }
-        is(F3_SW) { ctrl.memOp := MemOp.SW }
-      }
+    when(funct3 === "b000".U) {
+      ctrl.memOp := MemOp.SB
+    }.elsewhen(funct3 === "b001".U) {
+      ctrl.memOp := MemOp.SH
+    }.elsewhen(funct3 === "b010".U) {
+      ctrl.memOp := MemOp.SW
     }
-
+  }.elsewhen(opcode === "b0010011".U) {
     // OP-IMM (I-type ALU operations)
-    is(OP_IMM) {
-      ctrl.instType := InstType.I
-      ctrl.regWrite := true.B
-      ctrl.aluSrc2  := 1.U  // imm
+    ctrl.instType := InstType.I
+    ctrl.regWrite := true.B
+    ctrl.aluSrc2  := 1.U  // imm
 
-      switch(funct3) {
-        is(F3_ADD_SUB) { ctrl.aluOp := ALUOp.ADD }
-        is(F3_SLT)     { ctrl.aluOp := ALUOp.SLT }
-        is(F3_SLTU)    { ctrl.aluOp := ALUOp.SLTU }
-        is(F3_XOR)     { ctrl.aluOp := ALUOp.XOR }
-        is(F3_OR)      { ctrl.aluOp := ALUOp.OR }
-        is(F3_AND)     { ctrl.aluOp := ALUOp.AND }
-        is(F3_SLL)     { ctrl.aluOp := ALUOp.SLL }
-        is(F3_SRL_SRA) {
-          when(funct7 === F7_NORM) {
-            ctrl.aluOp := ALUOp.SRL
-          }.otherwise {
-            ctrl.aluOp := ALUOp.SRA
-          }
-        }
+    when(funct3 === "b000".U) {
+      ctrl.aluOp := ALUOp.ADD
+    }.elsewhen(funct3 === "b010".U) {
+      ctrl.aluOp := ALUOp.SLT
+    }.elsewhen(funct3 === "b011".U) {
+      ctrl.aluOp := ALUOp.SLTU
+    }.elsewhen(funct3 === "b100".U) {
+      ctrl.aluOp := ALUOp.XOR
+    }.elsewhen(funct3 === "b110".U) {
+      ctrl.aluOp := ALUOp.OR
+    }.elsewhen(funct3 === "b111".U) {
+      ctrl.aluOp := ALUOp.AND
+    }.elsewhen(funct3 === "b001".U) {
+      ctrl.aluOp := ALUOp.SLL
+    }.elsewhen(funct3 === "b101".U) {
+      when(funct7 === "b0000000".U) {
+        ctrl.aluOp := ALUOp.SRL
+      }.otherwise {
+        ctrl.aluOp := ALUOp.SRA
       }
     }
-
+  }.elsewhen(opcode === "b0110011".U) {
     // OP (R-type ALU operations)
-    is(OP_REG) {
-      ctrl.instType := InstType.R
-      ctrl.regWrite := true.B
+    ctrl.instType := InstType.R
+    ctrl.regWrite := true.B
 
-      switch(funct3) {
-        is(F3_ADD_SUB) {
-          when(funct7 === F7_NORM) {
-            ctrl.aluOp := ALUOp.ADD
-          }.otherwise {
-            ctrl.aluOp := ALUOp.SUB
-          }
-        }
-        is(F3_SLT)  { ctrl.aluOp := ALUOp.SLT }
-        is(F3_SLTU) { ctrl.aluOp := ALUOp.SLTU }
-        is(F3_XOR)  { ctrl.aluOp := ALUOp.XOR }
-        is(F3_OR)   { ctrl.aluOp := ALUOp.OR }
-        is(F3_AND)  { ctrl.aluOp := ALUOp.AND }
-        is(F3_SLL)  { ctrl.aluOp := ALUOp.SLL }
-        is(F3_SRL_SRA) {
-          when(funct7 === F7_NORM) {
-            ctrl.aluOp := ALUOp.SRL
-          }.otherwise {
-            ctrl.aluOp := ALUOp.SRA
-          }
-        }
+    when(funct3 === "b000".U) {
+      when(funct7 === "b0000000".U) {
+        ctrl.aluOp := ALUOp.ADD
+      }.otherwise {
+        ctrl.aluOp := ALUOp.SUB
+      }
+    }.elsewhen(funct3 === "b010".U) {
+      ctrl.aluOp := ALUOp.SLT
+    }.elsewhen(funct3 === "b011".U) {
+      ctrl.aluOp := ALUOp.SLTU
+    }.elsewhen(funct3 === "b100".U) {
+      ctrl.aluOp := ALUOp.XOR
+    }.elsewhen(funct3 === "b110".U) {
+      ctrl.aluOp := ALUOp.OR
+    }.elsewhen(funct3 === "b111".U) {
+      ctrl.aluOp := ALUOp.AND
+    }.elsewhen(funct3 === "b001".U) {
+      ctrl.aluOp := ALUOp.SLL
+    }.elsewhen(funct3 === "b101".U) {
+      when(funct7 === "b0000000".U) {
+        ctrl.aluOp := ALUOp.SRL
+      }.otherwise {
+        ctrl.aluOp := ALUOp.SRA
       }
     }
   }
