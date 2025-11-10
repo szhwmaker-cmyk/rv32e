@@ -112,12 +112,24 @@ class RV32ESoC extends Module {
 
 /**
  * RV32E SoC 生成器
- * 用于生成 Verilog 代码
+ *
+ * 生成 Verilog 的方法取决于您的 Chisel 版本：
+ *
+ * 方法 1: 使用 ChiselTest (推荐)
+ * ```
+ * import chiseltest._
+ * test(new RV32ESoC).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+ *   // 测试代码
+ * }
+ * ```
+ *
+ * 方法 2: 使用 getVerilogString (Chisel 3.5+)
+ * ```
+ * println(getVerilogString(new RV32ESoC))
+ * ```
+ *
+ * 方法 3: 使用命令行
+ * ```
+ * mill chisel.runMain rv32e.soc.VerilogGenerator
+ * ```
  */
-object RV32ESoC extends App {
-  // 使用 Chisel 3.6.0 兼容的 Driver API
-  chisel3.Driver.execute(
-    Array("--target-dir", "generated"),
-    () => new RV32ESoC
-  )
-}
