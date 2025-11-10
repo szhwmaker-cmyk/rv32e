@@ -4,11 +4,17 @@
 
 ### 修复的编译错误
 
-**问题**: Decoder.scala 中使用 `switch/is` 与 `BitPat` 类型不兼容
+#### 1. Decoder.scala - BitPat 兼容性
+**问题**: 使用 `switch/is` 与 `BitPat` 类型不兼容
 **错误**: `overloaded method apply with alternatives cannot be applied to (chisel3.util.BitPat)`
-
 **解决方案**: 将所有 `switch/is` 改为 `when/elsewhen` 模式
 - 提交: `5e2df12` - "Fix Decoder.scala: Replace switch/is with when/elsewhen for BitPat compatibility"
+
+#### 2. RV32ESoC.scala - ChiselStage API
+**问题**: `chisel3.stage.ChiselStage` 在 Chisel 3.6.0 中不可用
+**错误**: `type ChiselStage is not a member of package chisel3.stage`
+**解决方案**: 使用 `chisel3.Driver.execute` API（Chisel 3.6.0 兼容）
+- 提交: `84591e8` - "Fix RV32ESoC.scala: Use chisel3.Driver API for Chisel 3.6.0 compatibility"
 
 ### 项目完成状态
 
@@ -41,6 +47,8 @@
 ### Git 提交历史
 
 ```
+84591e8 Fix RV32ESoC.scala: Use chisel3.Driver API for Chisel 3.6.0 compatibility
+59a3de2 Add project status document
 5e2df12 Fix Decoder.scala: Replace switch/is with when/elsewhen for BitPat compatibility
 e1c09c4 Add implementation summary document
 ce96cfd Complete RV32E SoC implementation with all components
@@ -97,6 +105,10 @@ rv32e/
 1. ✅ **Decoder.scala 编译错误** - 已修复
    - 问题: switch/is 不支持 BitPat
    - 解决: 改用 when/elsewhen
+
+2. ✅ **RV32ESoC.scala 编译错误** - 已修复
+   - 问题: chisel3.stage.ChiselStage 不可用
+   - 解决: 使用 chisel3.Driver.execute
 
 ### 下一步
 
