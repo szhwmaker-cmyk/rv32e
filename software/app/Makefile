@@ -16,7 +16,8 @@ CFLAGS = -march=$(ARCH) -mabi=$(ABI) -O2 -Wall -Wextra
 CFLAGS += -fno-builtin -nostdlib -nostartfiles
 CFLAGS += -ffreestanding -fno-common
 ASFLAGS = -march=$(ARCH) -mabi=$(ABI)
-LDFLAGS = -T../common/linker.ld -nostdlib -static -lgcc
+LDFLAGS = -T../common/linker.ld -nostdlib -static
+LIBS = -lgcc
 
 # Common files
 COMMON_DIR = ../common
@@ -36,19 +37,19 @@ $(COMMON_DIR)/soc.o: $(COMMON_DIR)/soc.c $(COMMON_DIR)/soc.h
 
 # Build each program
 hello: hello.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< -o $@.elf
+	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< $(LIBS) -o $@.elf
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	$(OBJDUMP) -D $@.elf > $@.dump
 	$(SIZE) $@.elf
 
 blink: blink.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< -o $@.elf
+	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< $(LIBS) -o $@.elf
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	$(OBJDUMP) -D $@.elf > $@.dump
 	$(SIZE) $@.elf
 
 fibonacci: fibonacci.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< -o $@.elf
+	$(CC) $(CFLAGS) $(LDFLAGS) $(COMMON_OBJS) $< $(LIBS) -o $@.elf
 	$(OBJCOPY) -O binary $@.elf $@.bin
 	$(OBJDUMP) -D $@.elf > $@.dump
 	$(SIZE) $@.elf
