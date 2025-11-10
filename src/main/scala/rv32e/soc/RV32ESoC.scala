@@ -115,8 +115,9 @@ class RV32ESoC extends Module {
  * 用于生成 Verilog 代码
  */
 object RV32ESoC extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(
-    new RV32ESoC,
-    Array("--target-dir", "generated")
+  // 使用 Chisel 3.6.0 兼容的 Driver API
+  chisel3.Driver.execute(
+    Array("--target-dir", "generated"),
+    () => new RV32ESoC
   )
 }
